@@ -1,30 +1,14 @@
 # gowind
 
-gowind simply gives you access to tailwind without needing NodeJS. It usess standalone cli that is provided
-by TailwindCSS themselfs.
+![Static Badge](https://img.shields.io/badge/tailwind-css-blue?style=for-the-badge&logo=tailwindcss)
 
-## usage
 
-To use TailWindCSS that is provided by this project, you simply run `gowind` that will redirect
-execution directly to the tailwind standalone cli, so you can run any commands that are supported.
+gowind simply gives you access to tailwind without needing nodejs. It usess standalone cli that is provided
+by tailwindCSS themselfs.
 
-### init
+Binaries are downloaded based on your current operating system. It should work on all major systems like **Windows**, **Linux** and **MacOS**
 
-To initialize tailwind you can run this command
-
-```sh
-  gowind init [--postcss]
-```
-
-You can also provide the `--postcss` tag to use it with tailwind
-
-### watching
-
-To start watching files for style changes you can run following
-
-```sh
-  gowind -i 'path/to/input/style' -o 'path/to/output/style'
-```
+[tailwindcss documentation](https://tailwindcss.com/docs/installation)
 
 ## installation
 
@@ -32,4 +16,15 @@ to install gowind you can run the following command
 
 ```sh
   go install github.com/maatko/gowind@latest
+```
+
+## usage
+
+```sh
+  gowind <update/clean>
+```
+
+```sh
+  update - downloads the latest cli binary from tailwind
+  clean  - deletes the tailwind binary from go
 ```
