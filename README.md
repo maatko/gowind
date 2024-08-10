@@ -28,3 +28,5 @@ to install gowind you can run the following command
   update - downloads the latest cli binary from tailwind
   clean  - deletes the tailwind binary from go
 ```
+
+After you have updated you tailwindcss cli, you can access it by running `tailwindcss` in your terminal.
