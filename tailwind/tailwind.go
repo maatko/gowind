@@ -39,96 +39,50 @@ func GetVersion(version string) string {
 	return link
 }
 
-func GetBinary(path string) (string, error) {
-	workingDir, err := os.Getwd()
-	if err != nil {
-		return "", fmt.Errorf("failed to get the current directory: %s", err)
-	}
+func GetBinary(path string) string {
+	goPathDir := fmt.Sprintf("%s/bin", os.Getenv("GOPATH"))
 
-	tailwindDir := fmt.Sprintf("%s/.tailwind", workingDir)
-
-	_, err = os.Stat(tailwindDir)
+	_, err := os.Stat(goPathDir)
 	if err != nil {
 		if os.IsNotExist(err) {
-			os.Mkdir(tailwindDir, 0755)
+			os.Mkdir(goPathDir, 0755)
 		}
 	}
 
-	file := fmt.Sprintf("%s/%s", tailwindDir, path)
+	file := fmt.Sprintf("%s/%s", goPathDir, path)
 	if runtime.GOOS == "windows" {
 		file += ".exe"
 	}
 
-	return file, nil
+	return file
 }
 
-func DownloadMissing(path string, version string) (string, error) {
-	binaryPath, err := GetBinary(path)
-	if err != nil {
-		return "", fmt.Errorf("failed to make request: %s", err)
-	}
-
-	_, err = os.Stat(binaryPath)
-	if !os.IsNotExist(err) {
-		return binaryPath, nil
-	}
+func Download(path string, version string) error {
+	binaryPath := GetBinary(path)
 
 	log.Print("Downloading TailwindCSS binary")
 
 	resp, err := http.Get(GetVersion(version))
 	if err != nil {
-		return "", fmt.Errorf("failed to make request: %s", err)
+		return fmt.Errorf("failed to make request: %s", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("server returned non-200 status: %s", resp.Status)
+		return fmt.Errorf("server returned non-200 status: %s", resp.Status)
 	}
 
 	out, err := os.Create(binaryPath)
 	if err != nil {
-		return "", fmt.Errorf("failed to create file: %s", err)
+		return fmt.Errorf("failed to create file: %s", err)
 	}
 	defer out.Close()
 
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to copy response body: %w", err)
+		return fmt.Errorf("failed to copy response body: %w", err)
 	}
 
 	os.Chmod(binaryPath, 0755)
-	return binaryPath, nil
-}
-
-func Execute(arguments ...string) error {
-	workingDir, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("failed to access the working directory: %s", err)
-	}
-
-	binary, err := DownloadMissing("tailwindcss", "latest")
-	if err != nil {
-		return fmt.Errorf("failed to access the tailwind binary: %s", binary)
-	}
-
-	args := make([]string, len(arguments)+1)
-	args[0] = binary
-
-	copy(args[1:], arguments)
-
-	process, err := os.StartProcess(binary, args, &os.ProcAttr{
-		Files: []*os.File{
-			os.Stdin,
-			os.Stdout,
-			os.Stderr,
-		},
-		Dir: workingDir,
-	})
-
-	if err != nil {
-		return fmt.Errorf("failed to execute tailwind subprocess: %s", err)
-	}
-
-	process.Wait()
 	return nil
 }
