@@ -6,7 +6,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"runtime"
+	"strings"
 )
 
 const (
@@ -40,9 +42,16 @@ func GetVersion(version string) string {
 }
 
 func GetBinary(path string) string {
-	goPathDir := fmt.Sprintf("%s/bin", os.Getenv("GOPATH"))
+	cmd := exec.Command("go", "env", "GOPATH")
+	output, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
 
-	_, err := os.Stat(goPathDir)
+	goPath := strings.TrimSpace(string(output))
+	goPathDir := fmt.Sprintf("%s/bin", goPath)
+
+	_, err = os.Stat(goPathDir)
 	if err != nil {
 		if os.IsNotExist(err) {
 			os.Mkdir(goPathDir, 0755)
